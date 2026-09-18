@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Rounded Background Shield -->
+    <path
+        android:fillColor="#006C4C"
+        android:pathData="M16,16 C16,10 20,6 26,6 L70,6 C76,6 80,10 80,16 L80,80 C80,86 76,90 70,90 L26,90 C20,90 16,86 16,80 Z" />
+    <!-- Gradient / accent card pocket -->
+    <path
+        android:fillColor="#15803D"
+        android:pathData="M16,40 L80,40 L80,80 C80,86 76,90 70,90 L26,90 C20,90 16,86 16,80 Z" />
+    <!-- Golden Accent Line -->
+    <path
+        android:fillColor="#F8BD47"
+        android:pathData="M24,40 L72,40 L72,43 L24,43 Z" />
+    <!-- Bengali Taka ৳ glyph -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,22 C44,18 47,15 51,15 C55,15 58,18 58,22 C58,25 56,27 53,28 L53,36 L49,36 L49,28 C46,27 44,25 44,22 Z M51,18 C49,18 47.5,19.5 47.5,21.5 C47.5,23.5 49,25 51,25 C53,25 54.5,23.5 54.5,21.5 C54.5,19.5 53,18 51,18 Z" />
+    <!-- Horizontal Crossbar for Taka -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,28 L60,28 L60,31 L42,31 Z" />
+    <!-- Growth Arrow -->
+    <path
+        android:fillColor="#6FDBAC"
+        android:pathData="M32,72 L46,58 L54,64 L64,52 L64,58 L68,58 L68,48 L58,48 L58,52 L62,52 L54,60 L46,54 L30,68 Z" />
+</vector>

@@ -1,0 +1,6 @@
+{
+  "name": "Tk Manager",
+  "description": "A lightweight, fast, secure, and fully offline personal finance and loan management app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
