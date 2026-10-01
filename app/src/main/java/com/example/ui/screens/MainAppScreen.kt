@@ -1,139 +1,159 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Handshake
-import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.AccountBalanceWallet
-import androidx.compose.material.icons.outlined.Handshake
-import androidx.compose.material.icons.outlined.ReceiptLong
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.components.AddTransactionSheet
 import com.example.ui.screens.home.HomeScreen
-import com.example.ui.screens.loan.LoanScreen
+import com.example.ui.screens.loans.LoansScreen
 import com.example.ui.screens.settings.SettingsScreen
+import com.example.ui.theme.TealPrimary
 import com.example.ui.viewmodel.FinanceViewModel
-
-enum class NavigationDestination(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector,
-    val testTag: String
-) {
-    HOME(
-        title = "Trans.",
-        selectedIcon = Icons.Filled.ReceiptLong,
-        unselectedIcon = Icons.Outlined.ReceiptLong,
-        testTag = "nav_home"
-    ),
-    LOAN(
-        title = "Loans",
-        selectedIcon = Icons.Filled.Handshake,
-        unselectedIcon = Icons.Outlined.Handshake,
-        testTag = "nav_loan"
-    ),
-    SETTINGS(
-        title = "Settings",
-        selectedIcon = Icons.Filled.Settings,
-        unselectedIcon = Icons.Outlined.Settings,
-        testTag = "nav_settings"
-    )
-}
+import com.example.util.AppStrings
 
 @Composable
-fun MainAppScreen(viewModel: FinanceViewModel) {
-    var currentDestination by remember { mutableStateOf(NavigationDestination.HOME) }
-    val snackbarHostState = remember { SnackbarHostState() }
+fun MainAppScreen(
+    viewModel: FinanceViewModel,
+    modifier: Modifier = Modifier
+) {
+    var selectedNavIndex by remember { mutableIntStateOf(0) }
+    var showAddTransactionSheet by remember { mutableStateOf(false) }
 
-    val accountName by viewModel.accountName.collectAsState()
-    val avatarSticker by viewModel.avatarSticker.collectAsState()
-    val currencyCode by viewModel.currencyCode.collectAsState()
-    val currencySymbol by viewModel.currencySymbol.collectAsState()
-    val themeMode by viewModel.themeMode.collectAsState()
+    val accountName by viewModel.accountName.collectAsStateWithLifecycle()
+    val avatar by viewModel.avatar.collectAsStateWithLifecycle()
+    val currencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
+    val currencySymbol by viewModel.currencySymbol.collectAsStateWithLifecycle()
+    val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
 
-    val balanceSummary by viewModel.balanceSummary.collectAsState()
-    val monthlyBalanceSummary by viewModel.monthlyBalanceSummary.collectAsState()
-    val selectedMonth by viewModel.selectedMonth.collectAsState()
-    val selectedDay by viewModel.selectedDay.collectAsState()
-    val monthTransactionDays by viewModel.monthTransactionDays.collectAsState()
-    val dailyGroups by viewModel.dailyTransactionGroups.collectAsState()
-    val transactions by viewModel.filteredTransactions.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val selectedTransactionTab by viewModel.selectedTab.collectAsState()
+    val isBn = appLanguage == "bn"
 
-    val activeLoans by viewModel.activeLoans.collectAsState()
-    val completedLoans by viewModel.completedLoans.collectAsState()
-    val allRepayments by viewModel.allRepayments.collectAsState()
-    val selectedLoanTab by viewModel.selectedLoanTab.collectAsState()
+    val monthlySummary by viewModel.monthlySummary.collectAsStateWithLifecycle()
+    val lifetimeSummary by viewModel.lifetimeSummary.collectAsStateWithLifecycle()
+    val selectedYearMonth by viewModel.selectedYearMonth.collectAsStateWithLifecycle()
+    val selectedDay by viewModel.selectedDay.collectAsStateWithLifecycle()
+    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
+    val categoryBreakdown by viewModel.categoryBreakdown.collectAsStateWithLifecycle()
+    val monthTransactionDays by viewModel.monthTransactionDays.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    val customCategories by viewModel.customCategories.collectAsState()
-    val incomeCategories by viewModel.incomeCategories.collectAsState()
-    val expenseCategories by viewModel.expenseCategories.collectAsState()
-
-    val uiMessage by viewModel.uiMessage.collectAsState()
-
-    LaunchedEffect(uiMessage) {
-        uiMessage?.let { msg ->
-            snackbarHostState.showSnackbar(msg)
-            viewModel.clearUiMessage()
-        }
-    }
+    val loans by viewModel.allLoans.collectAsStateWithLifecycle()
+    val loanSummary by viewModel.loanSummary.collectAsStateWithLifecycle()
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar(
-                modifier = Modifier.testTag("main_bottom_nav"),
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp
+                tonalElevation = 8.dp
             ) {
-                NavigationDestination.entries.forEach { destination ->
-                    val isSelected = currentDestination == destination
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = { currentDestination = destination },
-                        icon = {
-                            Icon(
-                                imageVector = if (isSelected) destination.selectedIcon else destination.unselectedIcon,
-                                contentDescription = destination.title
-                            )
-                        },
-                        label = { Text(destination.title) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.testTag(destination.testTag)
-                    )
+                NavigationBarItem(
+                    selected = selectedNavIndex == 0,
+                    onClick = { selectedNavIndex = 0 },
+                    icon = { Icon(Icons.Default.Home, contentDescription = AppStrings.navHome(isBn)) },
+                    label = {
+                        Text(
+                            text = AppStrings.navHome(isBn),
+                            fontSize = 11.sp,
+                            fontWeight = if (selectedNavIndex == 0) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = TealPrimary,
+                        selectedTextColor = TealPrimary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.testTag("nav_home")
+                )
+
+                NavigationBarItem(
+                    selected = selectedNavIndex == 1,
+                    onClick = { selectedNavIndex = 1 },
+                    icon = { Icon(Icons.Default.Handshake, contentDescription = AppStrings.navLoans(isBn)) },
+                    label = {
+                        Text(
+                            text = AppStrings.navLoans(isBn),
+                            fontSize = 11.sp,
+                            fontWeight = if (selectedNavIndex == 1) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = TealPrimary,
+                        selectedTextColor = TealPrimary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.testTag("nav_loans")
+                )
+
+                NavigationBarItem(
+                    selected = selectedNavIndex == 2,
+                    onClick = { selectedNavIndex = 2 },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = AppStrings.navSettings(isBn)) },
+                    label = {
+                        Text(
+                            text = AppStrings.navSettings(isBn),
+                            fontSize = 11.sp,
+                            fontWeight = if (selectedNavIndex == 2) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = TealPrimary,
+                        selectedTextColor = TealPrimary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.testTag("nav_settings")
+                )
+            }
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = selectedNavIndex == 0,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
+            ) {
+                FloatingActionButton(
+                    onClick = { showAddTransactionSheet = true },
+                    containerColor = TealPrimary,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .size(58.dp)
+                        .testTag("add_transaction_fab")
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Transaction", modifier = Modifier.size(28.dp))
                 }
             }
         }
@@ -141,84 +161,76 @@ fun MainAppScreen(viewModel: FinanceViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+                .padding(innerPadding)
         ) {
-            when (currentDestination) {
-                NavigationDestination.HOME -> {
+            when (selectedNavIndex) {
+                0 -> {
                     HomeScreen(
                         accountName = accountName,
-                        avatarSticker = avatarSticker,
+                        avatar = avatar,
                         currencySymbol = currencySymbol,
-                        balanceSummary = balanceSummary,
-                        monthlyBalanceSummary = monthlyBalanceSummary,
-                        selectedMonth = selectedMonth,
+                        monthlySummary = monthlySummary,
+                        lifetimeSummary = lifetimeSummary,
+                        selectedYearMonth = selectedYearMonth,
                         selectedDay = selectedDay,
-                        monthTransactionDays = monthTransactionDays,
-                        dailyGroups = dailyGroups,
                         transactions = transactions,
+                        categoryBreakdown = categoryBreakdown,
+                        monthTransactionDays = monthTransactionDays,
                         searchQuery = searchQuery,
-                        selectedTab = selectedTransactionTab,
-                        incomeCategories = incomeCategories,
-                        expenseCategories = expenseCategories,
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                        onClearSearch = { viewModel.clearSearchQuery() },
-                        onTabSelected = { viewModel.setSelectedTab(it) },
+                        isBn = isBn,
                         onPreviousMonth = { viewModel.previousMonth() },
                         onNextMonth = { viewModel.nextMonth() },
                         onSelectDay = { viewModel.selectDay(it) },
-                        onClearDayFilter = { viewModel.clearSelectedDay() },
-                        onSelectYearMonthDay = { y, m, d -> viewModel.selectYearMonthDay(y, m, d) },
-                        onAddTransaction = { type, title, amount, category, dateMillis, note ->
-                            viewModel.addTransaction(type, title, amount, category, dateMillis, note)
-                        },
-                        onUpdateTransaction = { viewModel.updateTransaction(it) },
+                        onSearchChange = { viewModel.setSearchQuery(it) },
                         onDeleteTransaction = { viewModel.deleteTransaction(it) }
                     )
                 }
 
-                NavigationDestination.LOAN -> {
-                    LoanScreen(
+                1 -> {
+                    LoansScreen(
+                        loans = loans,
+                        loanSummary = loanSummary,
                         currencySymbol = currencySymbol,
-                        balanceSummary = balanceSummary,
-                        activeLoans = activeLoans,
-                        completedLoans = completedLoans,
-                        repayments = allRepayments,
-                        selectedTab = selectedLoanTab,
-                        onTabSelected = { viewModel.setSelectedLoanTab(it) },
-                        onAddLoan = { name, type, amount, dateMillis, dueDateMillis, note ->
-                            viewModel.addLoan(name, type, amount, dateMillis, dueDateMillis, note)
+                        isBn = isBn,
+                        onAddLoan = { person, type, amount, note, due ->
+                            viewModel.addLoan(person, type, amount, note, due)
                         },
-                        onUpdateLoan = { viewModel.updateLoan(it) },
-                        onDeleteLoan = { viewModel.deleteLoan(it) },
-                        onRecordRepayment = { loanId, amount, dateMillis, note ->
-                            viewModel.recordRepayment(loanId, amount, dateMillis, note)
-                        }
+                        onRecordRepayment = { loan, amount, note ->
+                            viewModel.recordRepayment(loan, amount, note)
+                        },
+                        onToggleSettled = { viewModel.toggleLoanSettled(it) },
+                        onDeleteLoan = { viewModel.deleteLoan(it) }
                     )
                 }
 
-                NavigationDestination.SETTINGS -> {
+                2 -> {
                     SettingsScreen(
                         accountName = accountName,
-                        avatarSticker = avatarSticker,
+                        avatar = avatar,
                         currencyCode = currencyCode,
                         currencySymbol = currencySymbol,
+                        appLanguage = appLanguage,
                         themeMode = themeMode,
-                        customCategories = customCategories,
-                        onAddCategory = { name, type, iconKey ->
-                            viewModel.addCategory(name, type, iconKey)
-                        },
-                        onUpdateCategory = { viewModel.updateCategory(it) },
-                        onDeleteCategory = { viewModel.deleteCategory(it) },
-                        onUpdateAccountName = { viewModel.updateAccountName(it) },
-                        onUpdateAvatar = { viewModel.updateAvatar(it) },
-                        onUpdateCurrency = { viewModel.updateCurrency(it) },
-                        onUpdateThemeMode = { viewModel.updateThemeMode(it) },
-                        onExportToExcel = { stream -> viewModel.exportToExcel(stream) },
-                        onResetAllData = { viewModel.resetAllData() }
+                        isBn = isBn,
+                        onUpdateProfile = { name, av -> viewModel.updateProfile(name, av) },
+                        onUpdateCurrency = { code, sym -> viewModel.updateCurrency(code, sym) },
+                        onSetLanguage = { viewModel.setLanguage(it) },
+                        onSetThemeMode = { viewModel.setThemeMode(it) },
+                        onClearAllData = { viewModel.clearAllData() }
                     )
                 }
             }
         }
+    }
+
+    if (showAddTransactionSheet) {
+        AddTransactionSheet(
+            currencySymbol = currencySymbol,
+            isBn = isBn,
+            onDismiss = { showAddTransactionSheet = false },
+            onSave = { type, title, amount, category, dateMillis, note ->
+                viewModel.addTransaction(type, title, amount, category, dateMillis, note)
+            }
+        )
     }
 }

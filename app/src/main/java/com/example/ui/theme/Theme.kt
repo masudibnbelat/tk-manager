@@ -1,89 +1,62 @@
 package com.example.ui.theme
 
-import android.os.Build
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryLight,
-    onPrimary = OnPrimaryLight,
-    primaryContainer = PrimaryContainerLight,
-    onPrimaryContainer = OnPrimaryContainerLight,
-    secondary = SecondaryLight,
-    onSecondary = OnSecondaryLight,
-    secondaryContainer = SecondaryContainerLight,
-    onSecondaryContainer = OnSecondaryContainerLight,
-    tertiary = TertiaryLight,
-    onTertiary = OnTertiaryLight,
-    tertiaryContainer = TertiaryContainerLight,
-    onTertiaryContainer = OnTertiaryContainerLight,
+    primary = TealPrimary,
+    onPrimary = SurfaceLight,
+    primaryContainer = TealContainer,
+    onPrimaryContainer = TealPrimary,
+    secondary = TealSecondary,
+    onSecondary = SurfaceLight,
     background = BackgroundLight,
-    onBackground = OnBackgroundLight,
+    onBackground = TextPrimaryLight,
     surface = SurfaceLight,
-    onSurface = OnSurfaceLight,
+    onSurface = TextPrimaryLight,
     surfaceVariant = SurfaceVariantLight,
-    onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+    onSurfaceVariant = TextSecondaryLight
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
-    onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
-    tertiary = TertiaryDark,
-    onTertiary = OnTertiaryDark,
-    tertiaryContainer = TertiaryContainerDark,
-    onTertiaryContainer = OnTertiaryContainerDark,
+    primary = TealPrimaryDark,
+    onPrimary = BackgroundDark,
+    primaryContainer = TealContainerDark,
+    onPrimaryContainer = TealPrimaryDark,
+    secondary = TealSecondary,
+    onSecondary = BackgroundDark,
     background = BackgroundDark,
-    onBackground = OnBackgroundDark,
+    onBackground = TextPrimaryDark,
     surface = SurfaceDark,
-    onSurface = OnSurfaceDark,
+    onSurface = TextPrimaryDark,
     surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    onSurfaceVariant = TextSecondaryDark
 )
 
 @Composable
-fun TkManagerTheme(
-    themeMode: String = "SYSTEM", // "SYSTEM", "LIGHT", "DARK"
-    dynamicColor: Boolean = false, // Keep branded emerald palette by default
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val systemDark = isSystemInDarkTheme()
-    val isDark = when (themeMode) {
-        "DARK" -> true
-        "LIGHT" -> false
-        else -> systemDark
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        isDark -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
-    val view = androidx.compose.ui.platform.LocalView.current
+    val view = LocalView.current
     if (!view.isInEditMode) {
-        androidx.compose.runtime.SideEffect {
-            val window = (view.context as? android.app.Activity)?.window
+        SideEffect {
+            val window = (view.context as? Activity)?.window
             if (window != null) {
-                val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, view)
-                insetsController.isAppearanceLightStatusBars = !isDark
-                insetsController.isAppearanceLightNavigationBars = !isDark
+                window.statusBarColor = colorScheme.background.toArgb()
+                window.navigationBarColor = colorScheme.background.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
             }
         }
     }
